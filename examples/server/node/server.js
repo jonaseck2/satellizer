@@ -302,6 +302,7 @@ app.post('/auth/github', function(req, res) {
             user.github = profile.id;
             user.picture = user.picture || profile.avatar_url;
             user.displayName = user.displayName || profile.name;
+            user.email = user.email || profile.email;
             user.save(function() {
               var token = createJWT(user);
               res.send({ token: token });
@@ -401,8 +402,9 @@ app.post('/auth/instagram', function(req, res) {
  |--------------------------------------------------------------------------
  */
 app.post('/auth/linkedin', function(req, res) {
+  var fields = ['id', 'first-name', 'last-name', 'email-address', 'picture-url'];
   var accessTokenUrl = 'https://www.linkedin.com/uas/oauth2/accessToken';
-  var peopleApiUrl = 'https://api.linkedin.com/v1/people/~:(id,first-name,last-name,email-address,picture-url)';
+  var peopleApiUrl = 'https://api.linkedin.com/v1/people/~:('+ fields.join(',') + ')';
   var params = {
     code: req.body.code,
     client_id: req.body.clientId,
@@ -439,6 +441,7 @@ app.post('/auth/linkedin', function(req, res) {
             user.linkedin = profile.id;
             user.picture = user.picture || profile.pictureUrl;
             user.displayName = user.displayName || profile.firstName + ' ' + profile.lastName;
+            user.email = user.email || profile.emailAddress;
             user.save(function() {
               var token = createJWT(user);
               res.send({ token: token });
@@ -455,6 +458,7 @@ app.post('/auth/linkedin', function(req, res) {
           user.linkedin = profile.id;
           user.picture = profile.pictureUrl;
           user.displayName = profile.firstName + ' ' + profile.lastName;
+          user.email = profile.emailAddress;
           user.save(function() {
             var token = createJWT(user);
             res.send({ token: token });
@@ -736,7 +740,7 @@ app.post('/auth/twitter', function(req, res) {
               }
 
               user.twitter = profile.id;
-              user.email = profile.email;
+              user.email = user.email || profile.email;
               user.displayName = user.displayName || profile.name;
               user.picture = user.picture || profile.profile_image_url_https.replace('_normal', '');
               user.save(function(err) {
